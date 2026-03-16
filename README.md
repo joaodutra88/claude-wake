@@ -1,28 +1,26 @@
 # claude-wake
 
-**Optimize your Claude Code session usage — automatically wake your PC and start your timer.**
+Wake your Windows PC from sleep to start a Claude Code session. Automatically. While you're still in bed.
 
-> Maximize Claude Code Max plan, optimize session windows, and never waste usage time again.
+Claude Code's Max plan has a 5-hour usage window. This tool sets an alarm on your PC so the window starts counting before you sit down to work. Your computer wakes up, sends a quick message to Claude, and goes back to sleep. Takes about 30 seconds, no interaction needed.
 
-Schedule your [Claude Code](https://claude.ai/claude-code) usage window to begin at a specific time every day — even while your PC is asleep. Your computer wakes up, pings Claude to start the 5-hour session timer, and goes right back to sleep. All in under a minute, no interaction needed.
+## Why I built this
 
-## Why?
+I wanted my Claude session ready by the time I opened my laptop at 8am. The usage window takes 5 hours to reset, so if I started it at 8, it wouldn't reset until 1pm. Starting it at 6am means it resets at 11am, right when I might need a second session.
 
-Claude Code (Max plan) has a **5-hour rolling usage window** that resets after the timer expires. If you want your window to start before you sit down at your desk, `claude-wake` handles it automatically — wake from sleep, start the timer, sleep again.
+So I wrote a script that wakes my PC at 6am, pings Claude, and sleeps again. Then I turned it into a CLI so other people could use it too.
 
-Perfect for developers who want to **optimize Claude Code session usage** and have their session ready and waiting when they start working.
+## What it does
 
-## Features
+- Wakes your PC from sleep at a time you choose (uses Windows Task Scheduler with `WakeToRun`)
+- Detects your Claude profiles automatically (claude, claude-max, claude-pro, etc.)
+- Pings Claude to start the usage timer
+- Puts the PC back to sleep after 30 seconds
+- Logs every cycle with timestamps
+- Saves your config so you only set it up once
+- No external dependencies, just Node.js built-ins
 
-- **Wake from sleep** — Uses Windows Task Scheduler with `WakeToRun` to wake your PC at the scheduled time
-- **Multi-profile support** — Auto-detects Claude profiles (claude, claude-max, claude-pro, etc.) and lets you choose which one to use
-- **Go back to sleep** — After pinging Claude, the PC suspends itself back to sleep
-- **Execution logs** — Every wake/ping/sleep cycle is logged with timestamps
-- **Interactive CLI** — Schedule, view logs, change profile, test, or remove — all from one menu
-- **Persistent config** — Saves your profile choice so you only set it up once
-- **Zero dependencies** — Only Node.js built-in modules, no external packages
-
-## Quick Start
+## Quick start
 
 ```bash
 git clone https://github.com/joaodutra88/claude-wake.git
@@ -68,26 +66,22 @@ node dist/index.js
 
 ## How it works
 
-1. You run `claude-wake` and pick a wake-up time + Claude profile
-2. It creates a Windows Scheduled Task with **Wake to Run** enabled
-3. It generates a PowerShell script that:
-   - Sets `CLAUDE_CONFIG_DIR` to your chosen profile
-   - Sends `"hi"` to Claude via `claude -p` (non-interactive mode)
-   - Waits 30 seconds for the request to complete
-   - Puts the PC back to sleep via `SetSuspendState`
-4. At the scheduled time, Windows wakes from sleep, runs the script, and sleeps again
+1. You run `claude-wake` and pick a time and a Claude profile
+2. It creates a Windows Scheduled Task with wake-to-run enabled
+3. It generates a PowerShell script that sets `CLAUDE_CONFIG_DIR`, sends "hi" to `claude -p`, waits 30 seconds, then calls `SetSuspendState` to sleep again
+4. Every day at that time, Windows wakes up, runs the script, and goes back to sleep
 
-## Multi-profile support
+## Multiple profiles
 
-If you have multiple Claude accounts (Max, Pro, etc.), the tool auto-detects all profiles in your home directory:
+If you have more than one Claude account, the tool finds all profiles in your home directory:
 
 ```
-~/.claude        → claude (default)
-~/.claude-max    → claude-max
-~/.claude-pro    → claude-pro
+~/.claude        -> claude (default)
+~/.claude-max    -> claude-max
+~/.claude-pro    -> claude-pro
 ```
 
-Each profile uses a separate `CLAUDE_CONFIG_DIR`, so you can schedule the wake for whichever plan has the usage window you want to optimize.
+Pick which one to wake. The choice is saved in `~/scripts/claude-wake.json`.
 
 ## Example log
 
@@ -101,31 +95,24 @@ Logs are saved to `~/scripts/claude-wake.log`.
 
 ## Requirements
 
-- **Windows 10 or 11**
-- **Claude Code CLI** installed ([installation guide](https://docs.anthropic.com/en/docs/claude-code/overview))
-- **Node.js 18+**
-- **Sleep mode enabled** (not Hibernate — the PC must be in S3 sleep for wake timers to work)
+- Windows 10 or 11
+- Claude Code CLI installed ([how to install](https://docs.anthropic.com/en/docs/claude-code/overview))
+- Node.js 18+
+- Sleep mode enabled (not Hibernate, the PC needs to be in S3 sleep for wake timers)
 
 ## Troubleshooting
 
 **PC doesn't wake up?**
-- Open Power Options → Change plan settings → Change advanced power settings → Sleep → Allow wake timers → Set to **Enable**
-- Some BIOS/UEFI settings may block wake timers — check your BIOS for "Wake on RTC" or similar options
+- Go to Power Options > Advanced > Sleep > Allow wake timers > Enable
+- Some BIOS settings block wake timers. Look for "Wake on RTC" or "RTC Alarm" in your BIOS
 
 **Claude command not found?**
-- Make sure Claude Code CLI is installed: `npm install -g @anthropic-ai/claude-code`
-- The tool checks `~/.local/bin/claude.exe` and `PATH` automatically
+- Install it: `npm install -g @anthropic-ai/claude-code`
+- The tool checks `~/.local/bin/claude.exe` and your PATH
 
 **PC doesn't go back to sleep?**
-- The scheduled task may need to run with elevated privileges
-- Check that no other applications are preventing sleep (use `powercfg /requests` to diagnose)
-
-## Use cases
-
-- **Optimize Claude Code Max plan** — Start your 5-hour window before you wake up so it's ready when you sit down
-- **Schedule Claude Code sessions** — Automate the session start for a consistent daily workflow
-- **Maximize Claude Code usage** — Don't waste time waiting for the session to begin
-- **Multi-account management** — Switch between Pro and Max profiles without reconfiguring
+- The task might need admin privileges
+- Run `powercfg /requests` to see if something is blocking sleep
 
 ## License
 
