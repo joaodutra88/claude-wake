@@ -1,0 +1,29 @@
+{
+  "name": "claude-wake",
+  "version": "1.0.0",
+  "description": "CLI tool to schedule Claude Code wake-from-sleep sessions on Windows",
+  "main": "dist/index.js",
+  "bin": {
+    "claude-wake": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts"
+  },
+  "keywords": [
+    "claude",
+    "wake",
+    "scheduler",
+    "windows",
+    "sleep",
+    "cli"
+  ],
+  "author": "joaodutra88",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
